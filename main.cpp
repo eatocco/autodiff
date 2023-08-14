@@ -4,42 +4,41 @@
 // autodiff include
 #include <autodiff/forward/real.hpp>
 #include <autodiff/forward/real/eigen.hpp>
+#include <autodiff/forward/dual.hpp>
+#include "sigma.hpp"
 using namespace autodiff;
-
-// The vector function for which a 4th order directional Taylor series will be computed.
-ArrayXreal4th f(const ArrayXreal4th &x)
-{
-    return x.sin() / x;
-}
 
 int main()
 {
-    using Eigen::ArrayXd;
+    Position x = 5.0;
+    Time t = 1.0;
+    int sz = 3;
+    //  Params p(sz, x, t, 1, 2);
 
-    ArrayXreal4th x(5); // the input vector x
-    x << 1.0, 2.0, 3.0, 4.0, 5.0;
+    Value u(sz);
+    u << 1.1, 2.2, 1.5;
+    Value q(sz);
+    q << 4.1, 2.0, 1.3;
 
-    ArrayXd v(5); // the direction vector v
-    v << 1.0, 1.0, 1.0, 1.0, 1.0;
+    sigmaFn s1 = [](Value u, Value q, Position x, Time t)
+    {
+        return (u * u).sum();
+    };
+    sigmaFn s2 = [](Value u, Value q, Position x, Time t)
+    {
+        return 5 * q(1);
+    };
+    sigmaFn s3 = [](Value u, Value q, Position x, Time t)
+    {
+        return (q * q).sum() + cos(x);
+    };
 
-    auto g = taylorseries(f, along(v), at(x)); // the function g(t) as a 4th order Taylor approximation of f(x + t·v)
+    sigmaFnArray s = {s1, s2, s3};
 
-    double t = 0.1; // the step length used to evaluate g(t), the Taylor approximation of f(x + t·v)
+    FluxObject sigma(s, u, q, x, t);
 
-    ArrayXreal4th u = f(x + t * v); // the exact value of f(x + t·v)
-
-    ArrayXd utaylor = g(t); // the 4th order Taylor estimate of f(x + t·v)
-
-    std::cout << std::fixed;
-    std::cout << "Comparison between exact evaluation and 4th order Taylor estimate of f(x + t·v):" << std::endl;
-    std::cout << "u(exact)  = " << u.transpose() << std::endl;
-    std::cout << "u(taylor) = " << utaylor.transpose() << std::endl;
+    std::cout
+        << "sigma = " << sigma(0) << std::endl;
+    std::cout << "du/dx = " << sigma.du(0, 0) << std::endl;
+    return 0;
 }
-
-/*-------------------------------------------------------------------------------------------------
-=== Output ===
----------------------------------------------------------------------------------------------------
-Comparison between exact evaluation and 4th order Taylor estimate of f(x + t·v):
-u(exact)  =  0.810189  0.411052  0.013413 -0.199580 -0.181532
-u(taylor) =  0.810189  0.411052  0.013413 -0.199580 -0.181532
--------------------------------------------------------------------------------------------------*/
