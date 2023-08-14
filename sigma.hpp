@@ -25,7 +25,6 @@ struct Params
     //  Params(unsigned int sz, Position x, Time t, Index i, Index j) : x(x), t(t), i(i), j(j) { u(sz), q(sz); };
 };
 
-// typedef std::function<autodiff::dual(Position, Time &, Params &)> sigmaFn;
 typedef std::function<autodiff::real(Value u, Value q, Position x, Time t)> sigmaFn;
 typedef std::vector<sigmaFn> sigmaFnArray;
 
@@ -36,29 +35,15 @@ namespace autodiff
     {
     public:
         FluxObject() = default;
-        //    FluxObject(sigmaFn fluxFn) : sigma(fluxFn) {}
         FluxObject(sigmaFnArray fluxFnArray) : sigmaVec(fluxFnArray) {}
-        FluxObject(sigmaFnArray fluxFnArray, Value &u, Value &q, Position &x, Time &t) : sigmaVec(fluxFnArray), u(u), q(q), x(x), t(t) {}
 
-        real operator()(Index i)
-        {
-            return sigmaVec[i](u, q, x, t);
-        }
         real operator()(Value u, Value q, Position x, Time t, Index i)
         {
             return sigmaVec[i](u, q, x, t);
         }
-        VectorXd du(Index i, Index j)
-        {
-            return gradient(sigmaVec[i], wrt(u(j)), at(u, q, x, t));
-        }
         VectorXd du(Value u, Value q, Position x, Time t, Index i, Index j)
         {
             return gradient(sigmaVec[i], wrt(u(j)), at(u, q, x, t));
-        }
-        VectorXd dq(Index i, Index j)
-        {
-            return gradient(sigmaVec[i], wrt(q(j)), at(u, q, x, t));
         }
         VectorXd dq(Value u, Value q, Position x, Time t, Index i, Index j)
         {
@@ -68,9 +53,5 @@ namespace autodiff
     private:
         // sigmaFn sigma;
         sigmaFnArray sigmaVec;
-        Value u;
-        Value q;
-        Position x;
-        Time t;
     };
 }

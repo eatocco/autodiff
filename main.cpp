@@ -35,10 +35,11 @@ int main()
 
     sigmaFnArray s = {s1, s2, s3};
 
-    FluxObject sigma(s, u, q, x, t);
+    FluxObject sigma(s);
 
     std::cout
-        << "sigma = " << sigma(0) << std::endl;
-    std::cout << "du/dx = " << sigma.du(0, 0) << std::endl;
+        << "sigma = " << sigma(u, q, x, t, 0) << std::endl;
+    std::cout << "du/dx = " << sigma.dq(u, q, x, t, 1, 1) << std::endl;
+
     return 0;
 }
