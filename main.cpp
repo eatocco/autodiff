@@ -1,19 +1,19 @@
 // C++ includes
 #include <iostream>
-
+#include <cmath>
 // autodiff include
 #include <autodiff/forward/real.hpp>
 #include <autodiff/forward/real/eigen.hpp>
 #include <autodiff/forward/dual.hpp>
 #include "sigma.hpp"
+#include "source.hpp"
 using namespace autodiff;
 
 int main()
 {
     Position x = 5.0;
     Time t = 1.0;
-    int sz = 3;
-    //  Params p(sz, x, t, 1, 2);
+    unsigned int sz = 3;
 
     Value u(sz);
     u << 1.1, 2.2, 1.5;
@@ -39,7 +39,39 @@ int main()
 
     std::cout
         << "sigma = " << sigma(u, q, x, t, 0) << std::endl;
-    std::cout << "du/dx = " << sigma.dq(u, q, x, t, 1, 1) << std::endl;
+    std::cout << "dsigma/du = " << sigma.dq(u, q, x, t, 1, 1) << std::endl;
+
+    // testing using autodiff for a source term
+
+    sln solution = [](dual x, dual t)
+    {
+        double uL = 1;
+        double uR = 0.5;
+
+        double xL = 0.1;
+        double xR = 1;
+        double k = 0.5;
+
+        double a = (asinh(uL) - asinh(uR)) / (xL - xR);
+        double b = (asinh(uL) - xL / xR * asinh(uR)) / (a * (xL / xR - 1));
+        double c = (M_PI / 2 - 3 * M_PI / 2) / (xL - xR);
+        double d = (M_PI / 2 - xL / xR * (3 * M_PI / 2)) / (c * (xL / xR - 1));
+
+        dual ans = sinh(a * (x - b)) - cos(c * (x - d)) * exp(-k * t);
+        return ans;
+    };
+
+    diffeq prob = [](sln &u, dual x, dual t)
+    {
+        dual ux = derivative(u, wrt(x), at(x, t));
+        dual ut = derivative(u, wrt(t), at(x, t));
+        // burgers equation w/ source
+        return ut + u(x, t) * ux;
+    };
+
+    SourceObj source(solution, prob);
+    std::cout << "u at x=0.5,t=5: " << source.u(0.5, 5) << std::endl;
+    std::cout << "Source at x=0.5,t=5: " << source(0.5, 5) << std::endl;
 
     return 0;
 }

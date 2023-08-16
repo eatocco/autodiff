@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SIGMA_HPP
+#define SIGMA_HPP
+
 #include <eigen3/Eigen/Core>
 #include <autodiff/forward/real.hpp>
 #include <autodiff/forward/real/eigen.hpp>
@@ -41,6 +43,7 @@ namespace autodiff
         {
             return sigmaVec[i](u, q, x, t);
         }
+        // derivatives
         VectorXd du(Value u, Value q, Position x, Time t, Index i, Index j)
         {
             return gradient(sigmaVec[i], wrt(u(j)), at(u, q, x, t));
@@ -49,9 +52,15 @@ namespace autodiff
         {
             return gradient(sigmaVec[i], wrt(q(j)), at(u, q, x, t));
         }
+        VectorXd dx(Value u, Value q, Position x, Time t, Index i, Index j)
+        {
+            return gradient(sigmaVec[i], wrt(x), at(u, q, x, t));
+        }
 
     private:
         // sigmaFn sigma;
         sigmaFnArray sigmaVec;
     };
 }
+
+#endif
