@@ -4,14 +4,16 @@ project(autodiff_test VERSION 0.1.0 LANGUAGES C CXX)
 include(CTest)
 enable_testing()
 
-add_executable(autodiff_test main.cpp)
+
+add_executable(autodiff_test main.cpp AutodiffWrapper.cpp)
 
 
 #option(BUILD_SHARED_LIBS "Build shared libs instead of static" ON)
-
+set(CMAKE_CXX_STANDARD ${PROJECT_VERSION})
 add_subdirectory(autodiff)
+add_subdirectory(toml11)
 find_package(Eigen3)
-
+target_include_directories(autodiff_test PRIVATE toml11 )
 target_link_libraries(autodiff_test PRIVATE autodiff)
 
 
@@ -20,6 +22,7 @@ target_link_libraries(autodiff_test PRIVATE autodiff)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
+
 #set(CMAKE_PREFIX_PATH "/home/eatocco/projects/autodiff/Catch2")
 include(CPack)
 
