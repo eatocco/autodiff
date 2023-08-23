@@ -17,6 +17,11 @@ struct vec
     {
         return values(i);
     }
+    void operator=(const Values &u)
+    {
+        for (int i = 0; i < u.size(); i++)
+            values(i) = u[i];
+    }
     vec(const Values &u) : values(u.size())
     {
         for (int i = 0; i < u.size(); i++)

@@ -19,7 +19,7 @@ int main()
     Time t = 1.0;
 
     Index i = 0;
-    Index j = 1;
+    Index j = 0;
 
     Values u = {2.0, 2.0, 3.1};
     Values q = {3.1, 5.4, 1.5};
