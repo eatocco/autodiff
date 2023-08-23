@@ -9,24 +9,15 @@
 using autodiff::dual;
 using autodiff::VectorXdual;
 
-struct vec
+struct ValuesWrapper
 {
     VectorXdual values;
-    operator VectorXdual() { return values; }
+    operator VectorXdual() { return VectorXdual(values); }
     auto &operator()(Index i)
     {
         return values(i);
     }
-    void operator=(const Values &u)
-    {
-        for (int i = 0; i < u.size(); i++)
-            values(i) = u[i];
-    }
-    vec(const Values &u) : values(u.size())
-    {
-        for (int i = 0; i < u.size(); i++)
-            values(i) = u[i];
-    }
+    ValuesWrapper(const Values &u) : values(Eigen::Map<const Eigen::VectorXd>(u.data(), u.size())) {}
 };
 
 typedef std::function<dual(VectorXdual u, VectorXdual q, dual x, double t)> sigmaFn;
