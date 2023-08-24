@@ -12,7 +12,7 @@ using autodiff::VectorXdual;
 struct ValuesWrapper
 {
     VectorXdual values;
-    operator VectorXdual() { return VectorXdual(values); }
+    operator VectorXdual() { return values; }
     auto &operator()(Index i)
     {
         return values(i);
@@ -22,6 +22,9 @@ struct ValuesWrapper
 
 typedef std::function<dual(VectorXdual u, VectorXdual q, dual x, double t)> sigmaFn;
 typedef std::vector<sigmaFn> sigmaFnArray;
+
+typedef std::function<dual(VectorXdual u, VectorXdual q, VectorXdual sigma, dual x, double t)> SourceFn;
+typedef std::vector<SourceFn> SourceFnArray;
 
 class AutodiffWrapper : public TransportSystem
 {
@@ -37,6 +40,7 @@ public:
 
     // The same for the flux and source functions -- the vectors have length nVars
     Value SigmaFn(Index i, const Values &u, const Values &q, Position x, Time t) override;
+    dual SigmaFn(Index i, VectorXdual u, VectorXdual q, dual x, double t);
     Value Sources(Index i, const Values &u, const Values &q, const Values &sigma, Position x, Time t) override;
 
     // We need derivatives of the flux functions
@@ -54,5 +58,6 @@ public:
 
 private:
     sigmaFnArray sigmaVec;
+    SourceFnArray SourceVec;
 };
 #endif

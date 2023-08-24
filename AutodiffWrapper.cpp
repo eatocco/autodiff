@@ -37,42 +37,39 @@ bool AutodiffWrapper::isUpperBoundaryDirichlet(Index i) const { return true; }
 
 Value AutodiffWrapper::SigmaFn(Index i, const Values &u, const Values &q, Position x, Time t)
 {
-
-    // Values v1 = {1.1, 3.2, 4.1};
-
-    // Eigen::Map<const Eigen::VectorXd> v(u.data(), u.size());
-    // vec udual(u);
-    // vec qdual(q);
-    // dual pos = x;
-
     ValuesWrapper uw(u);
     ValuesWrapper qw(q);
 
-    double sigma = sigmaVec[i](uw, qw, x, t).val;
+    Value sigma = sigmaVec[i](uw, qw, x, t).val;
     return sigma;
 }
-Value AutodiffWrapper::Sources(Index i, const Values &u, const Values &q, const Values &sigma, Position x, Time t) { return 0; }
+Value AutodiffWrapper::Sources(Index i, const Values &u, const Values &q, const Values &sigma, Position x, Time t)
+{
+
+    ValuesWrapper uw(u);
+    ValuesWrapper qw(q);
+    ValuesWrapper sw(sigma);
+    Value S = SourceVec[i](uw, qw, sw, x, t).val;
+    return S;
+}
 
 // We need derivatives of the flux functions
 Value AutodiffWrapper::dSigmaFn_du(Index i, Index j, const Values &u, const Values &q, Position x, Time t)
 {
-    // dual arr[] = {1, 2, 3, 4};
-    // Eigen::Map<VectorXdual> v(arr, 4);
-
     ValuesWrapper uw(u);
     ValuesWrapper qw(q);
-    std::cout << uw(j) << std::endl;
+
     auto dsdu = gradient(sigmaVec[i], wrt(uw(j)), at(uw, qw, x, t));
     return (Value)dsdu(0);
 }
 Value AutodiffWrapper::dSigmaFn_dq(Index i, Index j, const Values &u, const Values &q, Position x, Time t)
 {
-    // vec udual(u);
-    // vec qdual(q);
 
-    // auto dsdq = gradient(sigmaVec[i], wrt(qdual(j)), at(udual, qdual, x, t));
-    // return (Value)dsdq(0);
-    return 0;
+    ValuesWrapper uw(u);
+    ValuesWrapper qw(q);
+
+    auto dsdq = gradient(sigmaVec[i], wrt(qw(j)), at(uw, qw, x, t));
+    return (Value)dsdq(0);
 }
 
 // and for the sources
