@@ -5,15 +5,16 @@ include(CTest)
 enable_testing()
 
 
-add_executable(autodiff_test main.cpp AutodiffWrapper.cpp)
+add_executable(autodiff_test main.cpp Autodiff3VarCyl.cpp Constants.cpp)
 
 
 #option(BUILD_SHARED_LIBS "Build shared libs instead of static" ON)
 set(CMAKE_CXX_STANDARD ${PROJECT_VERSION})
+set(sundials_DIR "/home/eatocco/sundials/lib/")
 add_subdirectory(autodiff)
-add_subdirectory(toml11)
 find_package(Eigen3)
-target_include_directories(autodiff_test PRIVATE toml11 )
+#find_package(sundials)
+target_include_directories(autodiff_test PRIVATE toml11 /home/eatocco/sundials/lib/)
 target_link_libraries(autodiff_test PRIVATE autodiff)
 
 

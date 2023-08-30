@@ -7,30 +7,44 @@
 #include <autodiff/forward/dual.hpp>
 // #include "sigma.hpp"
 // #include "source.hpp"
-#include "AutodiffWrapper.hpp"
+#include "Autodiff3VarCyl.hpp"
 #include "Types.hpp"
 using namespace autodiff;
 
 int main()
 {
 
-    Position x = 5.0;
+    Position x = 0.4;
 
-    Time t = 1.0;
+    Time t = 0.0;
 
     Index i = 0;
     Index j = 0;
 
-    Values u = {2.0, 2.0, 3.1};
-    Values q = {3.1, 5.4, 1.5};
+    Values u(3);
+    u << 5700253868753132215.8273104052019, 913.28136977957033286570608431802, 913.2813697795703328657060843;
+    Values q(3);
+    q << 4929545543581451975.3046964112213, 789.80029571649370225130951430966, 789.80029571649370225130951430966;
+    Values grad(3);
+    // = {0.0, 0.0, 0.0};
+    Autodiff3VarCyl a;
 
-    AutodiffWrapper a;
+    // double sigma = a.SigmaFn(i, u, q, x, t);
+    // a.dSigmaFn_dq(i, grad, u, q, x, t);
+    std::cout << "Gamma = " << a.SigmaFn(0, u, q, x, t) << std::endl;
+    std::cout << "Peflux = " << a.SigmaFn(1, u, q, x, t) << std::endl;
+    std::cout << "Piflux = " << a.SigmaFn(2, u, q, x, t) << std::endl;
+    // std::cout << "dsigmadq = " << grad << std::endl;
+    double St = a.TestSource(0, x, 0.0);
+    std::cout << "Test source for density = " << St << std::endl;
+    double Stpe = a.TestSource(1, x, 0.0);
+    std::cout << "Test source for pe = " << Stpe << std::endl;
+    double Stpi = a.TestSource(2, x, 0.0);
+    std::cout << "Test source for pi = " << Stpi << std::endl;
 
-    double sigma = a.SigmaFn(i, u, q, x, t);
-    double dsigmadu = a.dSigmaFn_du(i, j, u, q, x, t);
-    std::cout << "sigma = " << sigma << std::endl;
-    std::cout << "dsigmadu = " << dsigmadu << std::endl;
-
+    // dual2nd d = 3.0;
+    // auto n = d.val.val;
+    // std::cout << n << std::endl;
     // Position x = 5.0;
     // Time t = 1.0;
     // unsigned int sz = 3;
